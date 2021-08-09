@@ -5,14 +5,19 @@ import math
 
 # in Si unit
 BLX = 0.1
-BLY = 0.2
-BLZ = 0.2
+BLY = 0.05
+BLZ = 0.05
 LX = 1
 LY = 1
 LZ = 1
 boxgeo = np.array([0., BLX,-0.5*BLY,0.5*BLY,-0.5*BLZ,0.5*BLZ], dtype = float) # X max, X min, Y max, Ymin, Z max, Z min
-B = pow(10,11) #in Z direction
-dt = pow(10,-12)
+B = 1 #Tesla
+dtinbox = pow(10,-13)
+dt = dtinbox
+dtoutbox = pow(10,-8)
+c2 = 9*pow(10,16)
+m0 = 9.1*pow(10,-31)
+q = 1.6*pow(10,-19)
 # Location 'noFieldRegion', 'FieldRegion', 'Spectrometer', 'Outboder', 'EnergyTooLow'
 
 class particle_state():
@@ -27,7 +32,7 @@ def IsInMagBox(coordinate):
     return True
 
 def ToSpectrom(coordinate):
-    if (coordinate[1] > 0.3): return True
+    if (coordinate[1] < -0.05): return True
     return False
 
 def IsOutBoder(coordinate):
@@ -36,23 +41,31 @@ def IsOutBoder(coordinate):
     if (coordinate[2]<-0.5*LZ or coordinate[2]>0.5*LZ): return True
     return False
 
-
 def gamma(velocity):
     magnitude_square = velocity[0]*velocity[0]+velocity[1]*velocity[1]+velocity[2]*velocity[2]
-    c_square = 9*pow(10,16)
-    return 1/math.sqrt(1-(magnitude_square/c_square))
+    return 1./math.sqrt(1.-(magnitude_square/c2))
+
+def momentum(velocity):
+    g = gamma(velocity)
+    gm0 = g*m0
+    return np.array([gm0*velocity[0],gm0*velocity[1],gm0*velocity[2]], dtype = float)
 
 def updateVelocity(velocity,delta_t):
-    q = 1.6*pow(10,-19)
-    force = q /pow(10,16)*velocity[0]*B #Lorentz force
-    g = gamma(velocity)
-    m = 9.1*pow(10,-31)
-    acceleration = (1/(m*g))*(force/g)
-    velocity[1]=velocity[1]+0.5*delta_t*acceleration #middle velocity
+    dpdt = np.array([-q*velocity[1]*B,-q*velocity[0]*B,0], dtype = float)
+    #print(dpdt)
+    p_new= momentum(velocity)+ dpdt*dt;
+    v_magnitude =math.sqrt( velocity[0]*velocity[0]+velocity[1]*velocity[1]+velocity[2]*velocity[2])
+    p_magnitude =math.sqrt( p_new[0]*p_new[0]+p_new[1]*p_new[1]+p_new[2]*p_new[2])
+    g=p_magnitude/(v_magnitude*m0)
+    #print(g)
+    #print(p_new)
+    velocity[0]= p_new[0]/(g*m0)
+    velocity[1]= p_new[1]/(g*m0)
+    velocity[2]= p_new[2]/(g*m0)
+    #print(velocity)
     
 def calcElectronVel(energy_in_MeV):
     mc2 = 0.511 #Mev/c^2
-    c2 = 9*pow(10,16)
     return math.sqrt(c2-c2/math.pow((1+energy_in_MeV/mc2),2))
     
 def source(coordinate, energy_in_MeV, thetaY = 0., thetaZ = 0.):
@@ -80,7 +93,7 @@ def updateLocation(state,delta_t):
         print('V too low') 
         return 4
     print(state.cor)
-    return 0
+    return 0 # out box but in border
 
 def aElectronPathCalc(state,delta_t):
     stepcounter = 0
@@ -88,6 +101,7 @@ def aElectronPathCalc(state,delta_t):
         stepcounter += 1
         flagLocation = updateLocation(state,delta_t)
         if (flagLocation==0):
+            dt = dtoutbox
             continue
         elif (flagLocation==1):
             updateVelocity(state.v,delta_t)
@@ -101,7 +115,7 @@ def aElectronPathCalc(state,delta_t):
     print(stepcounter)
     
 def aElectronCalc():
-    state = source(np.array([0.,0.,0.], dtype = float),0.00001)
+    state = source(np.array([0.,0.,0.], dtype = float),100)
     aElectronPathCalc(state,dt)
     
 aElectronCalc()
