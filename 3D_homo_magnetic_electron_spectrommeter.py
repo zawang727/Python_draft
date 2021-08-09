@@ -12,9 +12,9 @@ LY = 1
 LZ = 1
 boxgeo = np.array([0., BLX,-0.5*BLY,0.5*BLY,-0.5*BLZ,0.5*BLZ], dtype = float) # X max, X min, Y max, Ymin, Z max, Z min
 B = 1 #Tesla
-dtinbox = pow(10,-13)
+dtinbox = pow(10,-11)
 dt = dtinbox
-dtoutbox = pow(10,-8)
+dtoutbox = pow(10,-7)
 c2 = 9*pow(10,16)
 m0 = 9.1*pow(10,-31)
 q = 1.6*pow(10,-19)
