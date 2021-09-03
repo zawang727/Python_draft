@@ -5,6 +5,7 @@ import math
 import importlib
 
 Plottool = importlib.import_module("Plot_tool_magnetic_spectrommeter")
+MagneticField = importlib.import_module("magnetic_field")
 
 # in Si unit
 BLX = 0.1 #magnetic field box
@@ -15,16 +16,17 @@ LY = 1
 LZ = 1
 boxgeo = np.array([0., BLX,-0.5*BLY,0.5*BLY,-0.5*BLZ,0.5*BLZ], dtype = float) # X max, X min, Y max, Ymin, Z max, Z min
 B_strength = 0.5 #Tesla
-dtinbox = pow(10,-11)
+dtinbox = pow(10,-14)
 dt = dtinbox
-dtoutbox = pow(10,-7)
+dtoutbox = pow(10,-10)
 c2 = 9*pow(10,16)
 m0 = 9.1*pow(10,-31)
 q = 1.6*pow(10,-19)
 pointsource = np.array([0.,0.,0.])
 incidentEinMeV = 100.0
 spectromplane = [1.0,0.0,0.,0.2,0.,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
-Is_magnetic_homo = True
+Is_magnetic_homo = False
+MagneticField2D = []
 # Location 'noFieldRegion', 'FieldRegion', 'Spectrometer', 'Outboder', 'EnergyTooLow'
 
 class particle_state():
@@ -41,7 +43,7 @@ def IsInMagBox(coordinate):
 def ToSpectrom(coordinate):
     planeside = spectromplane[0]*(coordinate[0]-spectromplane[3]) + spectromplane[1]*(coordinate[1]-spectromplane[4]) + spectromplane[2]*(coordinate[2]-spectromplane[5])
     if (planeside > 0): 
-        print(" out %",coordinate)
+        print(" out ",coordinate)
         return True
     return False
 
@@ -61,7 +63,15 @@ def momentum(velocity):
     return np.array([gm0*velocity[0],gm0*velocity[1],gm0*velocity[2]], dtype = float)
 
 def updateMagneticField(coordinate,B):
-    return B
+    if (Is_magnetic_homo and len(MagneticField2D)>0):
+        return B
+    fieldX_ele = len(MagneticField2D[0])
+    fieldY_ele = len(MagneticField2D)
+    gridx = (int)((coordinate[0]/BLX)*fieldX_ele)
+    gridy = (int)((coordinate[1]/BLY)*fieldY_ele)
+    #print("B field to be % % %",gridx, gridy, float(MagneticField2D[gridx][gridy]) )
+    return float(MagneticField2D[gridx][gridy])
+    
 
 def updateVelocity(state,delta_t):
     B = updateMagneticField(state.cor,B_strength)
@@ -95,7 +105,7 @@ def updateLocation(state,delta_t):
     state.cor[1]+=state.v[1]*delta_t
     state.cor[2]+=state.v[2]*delta_t
     if (IsInMagBox(state.cor)): 
-        print('In_box ',state.cor[0],state.cor[1],state.cor[2])
+        #print('In_box ',state.cor[0],state.cor[1],state.cor[2])
         return 1
     if (ToSpectrom(state.cor)): 
         print('To Spectrom')
@@ -106,7 +116,7 @@ def updateLocation(state,delta_t):
     if (state.v[0]<0.01): 
         print('V too low') 
         return 4
-    print('Moveing ',state.cor[0],state.cor[1],state.cor[2])
+    #print('Moveing ',state.cor[0],state.cor[1],state.cor[2])
     #print(state.cor)
     return 0 # out box but in border
 
@@ -123,7 +133,7 @@ def aElectronPathCalc(state,delta_t):
             updateVelocity(state,delta_t)
         elif (flagLocation==2):
             print('To Spectrom and finish')
-            print(' % % %',state.cor[0],state.cor[1],state.cor[2])
+            print(state.cor[0],state.cor[1],state.cor[2])
             break
         else:
             print('Finish')
@@ -144,5 +154,6 @@ def aElectronCalc():
     box.xyzmax = [BLX,0.5*BLY,0.5*BLZ]
     Plottool.plot_model2D(box ,electronpaths)
     
+MagneticField2D = MagneticField.readMagnitCsv('magnet_1_measurement_for_test.csv')
 aElectronCalc()
 
