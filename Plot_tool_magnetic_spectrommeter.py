@@ -70,9 +70,9 @@ def plot_model3D(Frame,paths):
     plot_Box3D(ax,Frame,'red','Magnetic')
     for i in paths:
         plot_Curve3D(ax,i,'blue','Curve')
-    ax.set_xlim3d(0, 0.4)
-    ax.set_ylim3d(-0.2, 0.2)
-    ax.set_zlim3d(-0.2, 0.2)
+    ax.set_xlim3d(0, 0.2)
+    ax.set_ylim3d(-0.05, 0.05)
+    ax.set_zlim3d(-0.05, 0.05)
     plt.show()
     
 def plot_model2D(Frame,paths):
