@@ -4,7 +4,7 @@ import scipy
 import math
 import importlib
 
-IOtool = importlib.import_module("IOtool")
+IOtool = importlib.import_module("IO_tool_magnetic_spectrommeter")
 
 # in Si unit
 BLX = 0.1 #magnetic field box
@@ -23,7 +23,7 @@ m0 = 9.1*pow(10,-31)
 q = 1.6*pow(10,-19)
 pointsource = np.array([0.,0.,0.])
 incidentEinMeV = 100.0
-spectromplane = [0.0,1.0,0.,0.,0.5,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
+spectromplane = [1.0,0.0,0.,0.2,0.,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
 # Location 'noFieldRegion', 'FieldRegion', 'Spectrometer', 'Outboder', 'EnergyTooLow'
 
 class particle_state():
@@ -137,7 +137,7 @@ def aElectronCalc():
     box = IOtool.Box()
     box.xyzmin = [0,-0.5*BLY,-0.5*BLZ]
     box.xyzmax = [BLX,0.5*BLY,0.5*BLZ]
-    IOtool.plot_model(box ,curve)
+    IOtool.plot_model2D(box ,curve)
     
 aElectronCalc()
 

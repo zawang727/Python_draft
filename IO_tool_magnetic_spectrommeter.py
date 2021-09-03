@@ -7,6 +7,7 @@ Created on Sun Aug 29 21:14:11 2021
 
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 class Box():
     def __init__(self):
@@ -26,7 +27,7 @@ def list_of_cor_2_3_cor_list(list_of_cor):
     newCurve.path.append(arr[2].copy())
     return newCurve
        
-def plot_Box(ax,model,_color,_label): #ax is fig.gca(projection='3d') model is Box
+def plot_Box3D(ax,model,_color,_label): #ax is fig.gca(projection='3d') model is Box
     ax.plot([model.xyzmin[0],model.xyzmin[0]], [model.xyzmin[1],model.xyzmin[1]], [model.xyzmin[2],model.xyzmax[2]], color=_color, label=_label)
     ax.plot([model.xyzmin[0],model.xyzmin[0]], [model.xyzmin[1],model.xyzmax[1]], [model.xyzmin[2],model.xyzmin[2]], color=_color, label=_label)
     ax.plot([model.xyzmin[0],model.xyzmax[0]], [model.xyzmin[1],model.xyzmin[1]], [model.xyzmin[2],model.xyzmin[2]], color=_color, label=_label)
@@ -40,24 +41,43 @@ def plot_Box(ax,model,_color,_label): #ax is fig.gca(projection='3d') model is B
     ax.plot([model.xyzmin[0],model.xyzmax[0]], [model.xyzmin[1],model.xyzmin[1]], [model.xyzmax[2],model.xyzmax[2]], color=_color, label=_label)
     ax.plot([model.xyzmin[0],model.xyzmax[0]], [model.xyzmax[1],model.xyzmax[1]], [model.xyzmin[2],model.xyzmin[2]], color=_color, label=_label)
     
-    
-def plot_Curve(ax,model,_color,_label): #ax is fig.gca(projection='3d') model is Curve
+def plot_Curve3D(ax,model,_color,_label): #ax is fig.gca(projection='3d') model is Curve
     ax.plot(model.path[0],model.path[1],model.path[2], color=_color, label=_label)
-        
+    
+    
+def plot_Curve2D(ax,model,_color,_label): #ax is fig.gca(projection='2d') model is Curve
+    ax.plot(model.path[0],model.path[1], color=_color, label=_label)
+    
+    
+def plot_Box2D(ax,model,_color,_label): #ax is fig.gca(projection='2d') model is Box
+    ax.plot([model.xyzmin[0],model.xyzmin[0]], [model.xyzmin[1],model.xyzmin[1]],  color=_color, label=_label)
+    ax.plot([model.xyzmin[0],model.xyzmin[0]], [model.xyzmin[1],model.xyzmax[1]],  color=_color, label=_label)
+    ax.plot([model.xyzmin[0],model.xyzmax[0]], [model.xyzmin[1],model.xyzmin[1]],  color=_color, label=_label)
+    ax.plot([model.xyzmax[0],model.xyzmax[0]], [model.xyzmax[1],model.xyzmax[1]],  color=_color, label=_label)
+    ax.plot([model.xyzmax[0],model.xyzmax[0]], [model.xyzmax[1],model.xyzmin[1]],  color=_color, label=_label)
+    ax.plot([model.xyzmax[0],model.xyzmin[0]], [model.xyzmax[1],model.xyzmax[1]],  color=_color, label=_label)
+    ax.plot([model.xyzmax[0],model.xyzmax[0]], [model.xyzmax[1],model.xyzmin[1]],  color=_color, label=_label)
+    ax.plot([model.xyzmax[0],model.xyzmax[0]], [model.xyzmin[1],model.xyzmin[1]],  color=_color, label=_label)
+    ax.plot([model.xyzmin[0],model.xyzmin[0]], [model.xyzmax[1],model.xyzmin[1]],  color=_color, label=_label)
+    ax.plot([model.xyzmin[0],model.xyzmin[0]], [model.xyzmax[1],model.xyzmax[1]],  color=_color, label=_label)
+    ax.plot([model.xyzmin[0],model.xyzmax[0]], [model.xyzmin[1],model.xyzmin[1]], color=_color, label=_label)
+    ax.plot([model.xyzmin[0],model.xyzmax[0]], [model.xyzmax[1],model.xyzmax[1]], color=_color, label=_label)
     
 
-def plot_model(Frame,path):
+def plot_model3D(Frame,path):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    
-    plot_Box(ax,Frame,'red','Magnetic')
-    plot_Curve(ax,path,'blue','Curve')
-    
-    # 顯示圖例
-    #ax.legend()
-
-    # 顯示圖形
+    plot_Box3D(ax,Frame,'red','Magnetic')
+    plot_Curve3D(ax,path,'blue','Curve')
+    ax.set_xlim3d(0, 0.4)
+    ax.set_ylim3d(-0.2, 0.2)
+    ax.set_zlim3d(-0.2, 0.2)
     plt.show()
     
+def plot_model2D(Frame,path):
+    fig = plt.figure()
+    ax = fig.gca()
+    plot_Box2D(ax,Frame,'red','Magnetic')
+    plot_Curve2D(ax,path,'blue','Curve')
+    plt.show()
     
-abox = Box()
