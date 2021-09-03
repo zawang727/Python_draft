@@ -15,21 +15,27 @@ LX = 1 #global boundary
 LY = 1
 LZ = 1
 boxgeo = np.array([0., BLX,-0.5*BLY,0.5*BLY,-0.5*BLZ,0.5*BLZ], dtype = float) # X max, X min, Y max, Ymin, Z max, Z min
-B_strength = 0.5 #Tesla
+spectromplane = [1.0,0.0,0.,0.2,0.,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
+
 dtinbox = pow(10,-12)
 dt = dtinbox
 dtoutbox = pow(10,-8)
-c2 = 9*pow(10,16)
-m0 = 9.1*pow(10,-31)
-q = 1.6*pow(10,-19)
+
 pointsource = np.array([0.,0.,0.])
 incidentEinMeV = 100.0
-spectromplane = [1.0,0.0,0.,0.2,0.,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
+
+B_strength = 0.5 #Tesla
 Is_magnetic_homo = False
 MagneticField2D = []
 MagneticFilePath = 'magnet_1_measurement_for_test.csv'
+
 Is2D = True
 # Location 'noFieldRegion', 'FieldRegion', 'Spectrometer', 'Outboder', 'EnergyTooLow'
+
+# Physical constant
+c2 = 9*pow(10,16)
+m0 = 9.1*pow(10,-31)
+q = 1.6*pow(10,-19)
 
 class particle_state():
     def __init__(self):
