@@ -4,7 +4,7 @@ import scipy
 import math
 import importlib
 
-IOtool = importlib.import_module("IO_tool_magnetic_spectrommeter")
+Plottool = importlib.import_module("Plot_tool_magnetic_spectrommeter")
 
 # in Si unit
 BLX = 0.1 #magnetic field box
@@ -24,6 +24,7 @@ q = 1.6*pow(10,-19)
 pointsource = np.array([0.,0.,0.])
 incidentEinMeV = 100.0
 spectromplane = [1.0,0.0,0.,0.2,0.,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
+Is_magnetic_homo = True
 # Location 'noFieldRegion', 'FieldRegion', 'Spectrometer', 'Outboder', 'EnergyTooLow'
 
 class particle_state():
@@ -131,13 +132,17 @@ def aElectronPathCalc(state,delta_t):
     return pathrecord
     
 def aElectronCalc():
-    state = source(pointsource, incidentEinMeV)
-    pathrecord = aElectronPathCalc(state,dt)
-    curve = IOtool.list_of_cor_2_3_cor_list(pathrecord)
-    box = IOtool.Box()
+    electronpaths = []
+    for i in range (10,100,10):
+        print(i)
+        state = source(pointsource.copy(), i)
+        pathrecord = aElectronPathCalc(state,dt)
+        curve = Plottool.list_of_cor_2_3_cor_list(pathrecord)
+        electronpaths.append(curve)
+    box = Plottool.Box()
     box.xyzmin = [0,-0.5*BLY,-0.5*BLZ]
     box.xyzmax = [BLX,0.5*BLY,0.5*BLZ]
-    IOtool.plot_model2D(box ,curve)
+    Plottool.plot_model2D(box ,electronpaths)
     
 aElectronCalc()
 
