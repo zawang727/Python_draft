@@ -8,24 +8,24 @@ Plottool = importlib.import_module("Plot_tool_magnetic_spectrommeter")
 MagneticField = importlib.import_module("magnetic_field")
 
 # in Si unit
-BLX = 0.1 #magnetic field box
-BLY = 0.03
+BLX = 0.01 #magnetic field box
+BLY = 0.04
 BLZ = 0.02
 LX = 1 #global boundary
 LY = 1
 LZ = 1
 boxgeo = np.array([0., BLX,-0.5*BLY,0.5*BLY,-0.5*BLZ,0.5*BLZ], dtype = float) # X max, X min, Y max, Ymin, Z max, Z min
-spectromplane = [1.0,0.0,0.,0.2,0.,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
+spectromplane = [1.0,0.0,0.,0.1,0.,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
 
-dtinbox = pow(10,-12)
+dtinbox = pow(10,-14)
 dt = dtinbox
 dtoutbox = pow(10,-8)
 
 pointsource = np.array([0.,0.,0.])
 incidentEinMeV = 100.0
 
-B_strength = 0.5 #Tesla
-Is_magnetic_homo = False
+B_strength = 0.2 #Tesla
+Is_magnetic_homo = True
 MagneticField2D = []
 MagneticFilePath = 'magnet_1_measurement_for_test.csv'
 
@@ -86,15 +86,13 @@ def updateVelocity(state,delta_t):
     dpdt = np.array([-q*state.v[1]*B,-q*state.v[0]*B,0], dtype = float)
     #print(dpdt)
     p_new= momentum(state.v)+ dpdt*dt;
-    v_magnitude =math.sqrt( state.v[0]*state.v[0]+state.v[1]*state.v[1]+state.v[2]*state.v[2])
     p_magnitude =math.sqrt( p_new[0]*p_new[0]+p_new[1]*p_new[1]+p_new[2]*p_new[2])
+    v_magnitude =math.sqrt( state.v[0]*state.v[0]+state.v[1]*state.v[1]+state.v[2]*state.v[2])
     g=p_magnitude/(v_magnitude*m0)
-    #print(g)
-    #print(p_new)
+    p_magnitude2 =p_magnitude *p_magnitude
     state.v[0]= p_new[0]/(g*m0)
     state.v[1]= p_new[1]/(g*m0)
     state.v[2]= p_new[2]/(g*m0)
-    #print(velocity)
     
 def calcElectronVel(energy_in_MeV):
     mc2 = 0.511 #Mev/c^2
@@ -151,17 +149,22 @@ def aElectronPathCalc(state,delta_t):
     
 def aElectronCalc():
     electronpaths = []
-    for i in range (10,100,10):
-        print(i)
+    count = 1
+    energies = []
+    for i in range (1,11,1):
         state = source(pointsource.copy(), i)
+        #print(state.v[0])
         pathrecord = aElectronPathCalc(state,dt)
         curve = Plottool.list_of_cor_2_3_cor_list(pathrecord)
         electronpaths.append(curve)
+        energies.append(count)
+        count+=1
     box = Plottool.Box()
     box.xyzmin = [0,-0.5*BLY,-0.5*BLZ]
     box.xyzmax = [BLX,0.5*BLY,0.5*BLZ]
     if (Is2D):
         Plottool.plot_model2D(box ,electronpaths)
+        Plottool.plot_energy_spectrom(electronpaths, energies)
     else:
         Plottool.plot_model3D(box ,electronpaths)
         

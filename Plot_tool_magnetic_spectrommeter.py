@@ -81,5 +81,22 @@ def plot_model2D(Frame,paths):
     plot_Box2D(ax,Frame,'red','Magnetic')
     for i in paths:
         plot_Curve2D(ax,i,'blue','Curve')
+    plt.title("Electron path") # title
+    plt.xlabel("X (m)") # y label
+    plt.ylabel("Y (m)") # x label
+    plt.xlim([0, 0.1])
+    plt.ylim([-0.05, 0.01])
+    plt.show()
+    
+def plot_energy_spectrom(paths,energies):
+    fig1 = plt.figure()
+    ax = fig1.gca()
+    points = []
+    for i in paths:
+        points.append(i.path[1][-1])
+    ax.plot(points, energies,  color='blue')
+    plt.title("Electron path") # title
+    plt.xlabel("Y (m) on spectrom") # y label
+    plt.ylabel("Energy (MeV)") # x label
     plt.show()
     
