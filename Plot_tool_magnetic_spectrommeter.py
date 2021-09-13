@@ -103,9 +103,9 @@ def plot_energy_spectrom(paths,energies):
     write_plot(points,energies);
     
 def write_plot(X: list,Y: list, File : str = 'plot_output.csv'):
-    with open(File, 'w', ) as myfile:
-        fp = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+    with open(File, 'a', ) as myfile:
         for value in range(len(X)):
-            fp.writerow([ X[value],Y[value]])
+            strrow = "%f , %f\n" %(X[value],Y[value])
+            myfile.write(strrow)
     
     
