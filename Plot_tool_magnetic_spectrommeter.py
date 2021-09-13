@@ -8,6 +8,7 @@ Created on Sun Aug 29 21:14:11 2021
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import csv
 
 class Box():
     def __init__(self):
@@ -99,4 +100,12 @@ def plot_energy_spectrom(paths,energies):
     plt.xlabel("Y (m) on spectrom") # y label
     plt.ylabel("Energy (MeV)") # x label
     plt.show()
+    write_plot(points,energies);
+    
+def write_plot(X: list,Y: list, File : str = 'plot_output.csv'):
+    with open(File, 'w', ) as myfile:
+        fp = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+        for value in range(len(X)):
+            fp.writerow([ X[value],Y[value]])
+    
     
