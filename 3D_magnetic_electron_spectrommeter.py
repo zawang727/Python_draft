@@ -15,16 +15,17 @@ LX = 1 #global boundary
 LY = 1
 LZ = 1
 boxgeo = np.array([0., BLX,-0.5*BLY,0.5*BLY,-0.5*BLZ,0.5*BLZ], dtype = float) # X max, X min, Y max, Ymin, Z max, Z min
-spectromplane = [1.0,0.0,0.,0.1,0.,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
+spectromplane = [1,0,0.,0.17,0.0,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
 
 dtinbox = pow(10,-14)
 dt = dtinbox
-dtoutbox = pow(10,-8)
+dtoutbox = pow(10,-13)
+
 
 pointsource = np.array([0.,0.,0.])
 incidentEinMeV = 100.0
 
-B_strength = 0.2 #Tesla
+B_strength = 0.22 #Tesla
 Is_magnetic_homo = True
 MagneticField2D = []
 MagneticFilePath = 'magnet_1_measurement_for_test.csv'
@@ -33,7 +34,7 @@ Is2D = True
 # Location 'noFieldRegion', 'FieldRegion', 'Spectrometer', 'Outboder', 'EnergyTooLow'
 
 # Physical constant
-c2 = 9*pow(10,16)
+c2 = 2.9979*2.9979*pow(10,16)
 m0 = 9.1*pow(10,-31)
 q = 1.6*pow(10,-19)
 
@@ -89,14 +90,21 @@ def updateVelocity(state,delta_t):
     p_magnitude =math.sqrt( p_new[0]*p_new[0]+p_new[1]*p_new[1]+p_new[2]*p_new[2])
     v_magnitude =math.sqrt( state.v[0]*state.v[0]+state.v[1]*state.v[1]+state.v[2]*state.v[2])
     g=p_magnitude/(v_magnitude*m0)
-    p_magnitude2 =p_magnitude *p_magnitude
     state.v[0]= p_new[0]/(g*m0)
     state.v[1]= p_new[1]/(g*m0)
     state.v[2]= p_new[2]/(g*m0)
     
+def updateVelocity2(state,delta_t):
+    B = updateMagneticField(state.cor,B_strength)
+    g = gamma(state.v)
+    state.v[0] = state.v[0] + q/g/m0*state.v[1]*delta_t*B
+    state.v[1] = state.v[1] - q/g/m0*state.v[0]*delta_t*B  
+    
+    
 def calcElectronVel(energy_in_MeV):
     mc2 = 0.511 #Mev/c^2
-    return math.sqrt(c2-c2/math.pow((1+energy_in_MeV/mc2),2))
+    #return math.sqrt(c2-c2/math.pow((1+energy_in_MeV/mc2),2))
+    return math.sqrt(1-1/math.pow((1+energy_in_MeV/mc2),2))*2.9979*pow(10,8);
     
 def source(coordinate, energy_in_MeV, thetaY = 0., thetaZ = 0.):
     state = particle_state()
@@ -106,10 +114,7 @@ def source(coordinate, energy_in_MeV, thetaY = 0., thetaZ = 0.):
     state.v[2] =  calcElectronVel(energy_in_MeV)*math.cos(thetaY)*math.sin(thetaZ)
     return state
 
-def updateLocation(state,delta_t):
-    state.cor[0]+=state.v[0]*delta_t
-    state.cor[1]+=state.v[1]*delta_t
-    state.cor[2]+=state.v[2]*delta_t
+def check_pos(state: particle_state):
     if (IsInMagBox(state.cor)): 
         #print('In_box ',state.cor[0],state.cor[1],state.cor[2])
         return 1
@@ -122,9 +127,13 @@ def updateLocation(state,delta_t):
     if (state.v[0]<0.01): 
         print('V too low') 
         return 4
-    #print('Moveing ',state.cor[0],state.cor[1],state.cor[2])
-    #print(state.cor)
     return 0 # out box but in border
+
+def updateLocation(state,delta_t):
+    state.cor[0]+=state.v[0]*delta_t
+    state.cor[1]+=state.v[1]*delta_t
+    state.cor[2]+=state.v[2]*delta_t
+    return check_pos(state)
 
 def aElectronPathCalc(state,delta_t):
     pathrecord = []
@@ -136,12 +145,13 @@ def aElectronPathCalc(state,delta_t):
         if (flagLocation==0):
             continue
         elif (flagLocation==1):
-            updateVelocity(state,delta_t)
+            updateVelocity2(state,delta_t)
         elif (flagLocation==2):
             print('To Spectrom and finish')
             print(state.cor[0],state.cor[1],state.cor[2])
             break
         else:
+            print(state.cor[0],state.cor[1],state.cor[2])
             print('Finish')
             break
     print(stepcounter)
