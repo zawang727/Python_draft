@@ -8,14 +8,14 @@ Plottool = importlib.import_module("Plot_tool_magnetic_spectrommeter")
 MagneticField = importlib.import_module("magnetic_field")
 
 # in Si unit
-BLX = 0.01 #magnetic field box
-BLY = 0.04
+BLX = 0.012 #magnetic field box
+BLY = 0.03
 BLZ = 0.02
 LX = 1 #global boundary
 LY = 1
 LZ = 1
-boxgeo = np.array([0., BLX,-0.5*BLY,0.5*BLY,-0.5*BLZ,0.5*BLZ], dtype = float) # X max, X min, Y max, Ymin, Z max, Z min
-spectromplane = [1,0,0.,0.17,0.0,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
+boxgeo = np.array([0.09,-0.5*BLY,-0.5*BLZ, BLX+0.01,0.5*BLY,0.5*BLZ], dtype = float) # X min, Y min, Z min, X max, Y max, Z max
+spectromplane = [1,0,0.,0.175,0.0,0.] #a,b,c,x1,y1,y2  a(x-x1)+b(y-y1)+c(z-z1) = 0
 
 dtinbox = pow(10,-14)
 dt = dtinbox
@@ -25,8 +25,8 @@ dtoutbox = pow(10,-13)
 pointsource = np.array([0.,0.,0.])
 incidentEinMeV = 100.0
 
-B_strength = 0.22 #Tesla
-Is_magnetic_homo = True
+B_strength = 0.39 #Tesla
+Is_magnetic_homo = False
 MagneticField2D = []
 MagneticFilePath = 'magnet_1_measurement_for_test.csv'
 gp0 = 0.;
@@ -51,9 +51,9 @@ class particle_state():
             self.v=vnum
 
 def IsInMagBox(coordinate):
-    if (coordinate[0]<boxgeo[0] or coordinate[0]>boxgeo[1]): return False
-    if (coordinate[1]<boxgeo[2] or coordinate[1]>boxgeo[3]): return False
-    if (coordinate[2]<boxgeo[4] or coordinate[2]>boxgeo[5]): return False
+    if (coordinate[0]<boxgeo[0] or coordinate[0]>boxgeo[3]): return False
+    if (coordinate[1]<boxgeo[1] or coordinate[1]>boxgeo[4]): return False
+    if (coordinate[2]<boxgeo[2] or coordinate[2]>boxgeo[5]): return False
     return True
 
 def ToSpectrom(coordinate):
@@ -86,8 +86,11 @@ def updateMagneticField(coordinate,B):
         return B
     fieldX_ele = len(MagneticField2D[0])
     fieldY_ele = len(MagneticField2D)
-    gridx = (int)((coordinate[0]/BLX)*fieldX_ele)
-    gridy = (int)((coordinate[1]/BLY)*fieldY_ele)
+    gridx = (int)(((coordinate[0]-boxgeo[0])/BLX)*fieldX_ele)
+    gridy = (int)(((coordinate[1]-boxgeo[1])/BLY)*fieldY_ele)
+    #print(gridx,gridy)
+    if(gridx>=fieldX_ele): gridx = fieldX_ele-1
+    if(gridy>=fieldY_ele): gridy = fieldY_ele-1
     #print("B field to be % % %",gridx, gridy, float(MagneticField2D[gridx][gridy]) )
     return float(MagneticField2D[gridx][gridy])
     
@@ -130,7 +133,6 @@ def check_pos(state: particle_state):
         #print('In_box ',state.cor[0],state.cor[1],state.cor[2])
         return 1
     if (ToSpectrom(state.cor)): 
-        print('To Spectrom')
         return 2
     if (IsOutBoder(state.cor)): 
         print('Out of boder') 
@@ -193,8 +195,8 @@ def aElectronCalc():
     electronpaths = []
     count = 1
     energies = []
-    for i in range (1,11,1):
-        state = source(pointsource.copy(), i)
+    for i in range (1,9,1):
+        state = source(pointsource.copy(), i/4)
         #print(state.v[0])
         pathrecord = aElectronPathCalc(state,dt)
         curve = Plottool.list_of_cor_2_3_cor_list(pathrecord)
@@ -202,8 +204,8 @@ def aElectronCalc():
         energies.append(count)
         count+=1
     box = Plottool.Box()
-    box.xyzmin = [0,-0.5*BLY,-0.5*BLZ]
-    box.xyzmax = [BLX,0.5*BLY,0.5*BLZ]
+    box.xyzmin = boxgeo[:3]
+    box.xyzmax = boxgeo[3:]
     if (Is2D):
         Plottool.plot_model2D(box ,electronpaths)
         Plottool.plot_energy_spectrom(electronpaths, energies)

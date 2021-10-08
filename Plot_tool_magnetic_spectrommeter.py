@@ -85,8 +85,8 @@ def plot_model2D(Frame,paths):
     plt.title("Electron path") # title
     plt.xlabel("X (m)") # y label
     plt.ylabel("Y (m)") # x label
-    plt.xlim([0, 0.17])
-    plt.ylim([-0.22, 0.01])
+    plt.xlim([0, 0.175])
+    #plt.ylim([-0.22, 0.01])
     plt.show()
     
 def plot_energy_spectrom(paths,energies):
@@ -96,6 +96,7 @@ def plot_energy_spectrom(paths,energies):
     for i in paths:
         points.append(i.path[1][-1])
     ax.plot(points, energies,  color='blue')
+    print(points);
     plt.title("Electron path") # title
     plt.xlabel("Y (m) on spectrom") # y label
     plt.ylabel("Energy (MeV)") # x label
